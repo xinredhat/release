@@ -100,39 +100,9 @@ EOF
   callback_url=$(grep "callback-url" < "$DEBUG_OUTPUT" | sed 's/.*: //g')
   webhook_url=$(grep "webhook-url" < "$DEBUG_OUTPUT"  | sed 's/.*: //g') 
 
-  echo "homepage-url: $homepage_url"
-  echo "callback-url: $callback_url"
-  echo "webhook-url: $webhook_url"
-}
-
-register_pac_server(){
-  echo "Registering PAC server to SprayProxy server"
-  for _ in {1..5}; do
-    if curl -k -X POST -H "Authorization: Bearer ${SPRAYPROXY_SERVER_TOKEN}" "${SPRAYPROXY_SERVER_URL}"/backends --data '{"url": "'"$webhook_url"'"}'; then
-      break
-    fi
-    sleep 5
-  done
-}
-
-unregister_pac_server(){
-  echo "Unregistering PAC server from SprayProxy server"
-  for _ in {1..5}; do
-    if curl -k -X DELETE -H "Authorization: Bearer ${SPRAYPROXY_SERVER_TOKEN}" "${SPRAYPROXY_SERVER_URL}"/backends/"$webhook_url" --data '{"url": "'"$webhook_url"'"}'; then
-      break
-    fi
-    sleep 5
-  done
-}
-
-list_pac_server(){
-  echo "List PAC server from SprayProxy server"
-  for _ in {1..5}; do
-    if curl -k -X GET -H "Authorization: Bearer ${SPRAYPROXY_SERVER_TOKEN}" "${SPRAYPROXY_SERVER_URL}"/backends; then
-      break
-    fi
-    sleep 5
-  done
+  echo "$homepage_url" > "${SHARED_DIR}/homepage_url"
+  echo "$callback_url" > "${SHARED_DIR}/callback_url"
+  echo "$webhook_url" > "${SHARED_DIR}/webhook_url"
 }
 
 e2e_test(){
@@ -143,7 +113,4 @@ e2e_test(){
 
 clone_repo
 install_rhtap
-register_pac_server
-list_pac_server
 e2e_test
-unregister_pac_server
